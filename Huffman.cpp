@@ -7,8 +7,8 @@
 
 const int AlphabetSize = 1 <<CHAR_BIT;
 
-typdef std::vector<bool> HuffCode;
-typdef std::map<char, HuffCode> HuffMap;
+typedef std::vector<bool> HuffCode;
+typedef std::map<char, HuffCode> HuffCodeMap;
 
 class INode
 {
@@ -39,10 +39,6 @@ class LeafNode : public INode//Leaf class that also contains a character
 		const char c;
 
 		LeafNode(char c, int f) : INode(f) , c(c){}
-
-		~LeafNode(){
-			delete c;
-		}
 };
 
 struct NodeCompare //compare two nodes
@@ -50,7 +46,7 @@ struct NodeCompare //compare two nodes
 	bool operator()(const INode* node1, const INode* node2) const {return node1->f > node2->f;}
 };
 
-*INode BuildHuffmanTree(const int (&frequencies)[AlphabetSize]){
+INode* BuildHuffmanTree(const int (&frequencies)[AlphabetSize]){
 	std::priority_queue<INode*, std::vector<INode*>, NodeCompare> trees;
 
 	for(int i=0;i < AlphabetSize;++i){
@@ -58,12 +54,69 @@ struct NodeCompare //compare two nodes
 			trees.push(new LeafNode(frequencies[i], (char)i ));
 	}
 
-	while(trees.size()>1)
+	while(trees.size()>1){
+		INode* lhs  = trees.top();
+		trees.pop();
+
+		INode* rhs = trees.top();
+		trees.pop();
+
+		trees.push(new InternalNode(lhs, rhs));
+	}
+
+	return trees.top() ;
+}
+
+void GenerateCodes(const INode* node, const HuffCode& prefix, HuffCodeMap& outCodes)
+{
+	if(const LeafNode* lf = dynamic_cast<const LeafNode*>(node))
+	{
+		outCodes[lf->c] = prefix;
+	}
+
+	else if (const InternalNode* in = dynamic_cast<const InternalNode*>(node))
+	{
+		HuffCode rightPrefix = prefix;
+		rightPrefix.push_back(true);
+		GenerateCodes(in->right, rightPrefix, outCodes);
+		
+		HuffCode leftPrefix = prefix;
+		leftPrefix.push_back(false);
+		GenerateCodes(in->left, leftPrefix, outCodes);
+	}
+}
+
+
+
+HuffCode HuffmanCompress(const char* string){
+	std::cout<<"Huffman Compression called"<<std::endl;
+	HuffCode compressedCode;
+	int frequencies[AlphabetSize] = {0};
+	const char* ptr = string;
+	
+	while(*ptr != '\0')
+		++frequencies[*ptr++];
+
+	INode* root = BuildHuffmanTree(frequencies);
+
+	HuffCodeMap codes;
+	GenerateCodes(root, HuffCode(), codes);
+	delete root;
+
+	for(ptr = string;*ptr != '\0'; ptr++){
+		compressedCode.insert(compressedCode.end(), codes[*ptr].begin(), codes[*ptr].end());
+	}
+
+	return compressedCode;
 }
 
 int main(){
-	:x
-
+	std::cout<<"Test Started"<<std::endl;
+	const char* s = "this is a test";
+	HuffCode code = HuffmanCompress(s);
+	for(HuffCode::const_iterator i = code.begin(); i!=code.end(); ++i){
+		std::cout<< "This has been called  times" <<std::endl;	
+		std::cout<< *i << ' ' ;
+	}
+	std::cout<<"Test Ended"<<std::endl;
 }
-
-
