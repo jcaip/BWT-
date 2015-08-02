@@ -50,18 +50,19 @@ INode* BuildHuffmanTree(const int (&frequencies)[AlphabetSize]){
 	std::priority_queue<INode*, std::vector<INode*>, NodeCompare> trees;
 
 	for(int i=0;i < AlphabetSize;++i){
-		if(frequencies[i] != 0)
+		if(frequencies[i] != 0){
 			trees.push(new LeafNode(frequencies[i], (char)i ));
+		}
 	}
-
 	while(trees.size()>1){
 		INode* lhs  = trees.top();
 		trees.pop();
 
 		INode* rhs = trees.top();
 		trees.pop();
-
-		trees.push(new InternalNode(lhs, rhs));
+		
+		INode* parent = new InternalNode(lhs, rhs);
+		trees.push(parent);
 	}
 
 	return trees.top() ;
@@ -76,45 +77,47 @@ void GenerateCodes(const INode* node, const HuffCode& prefix, HuffCodeMap& outCo
 
 	else if (const InternalNode* in = dynamic_cast<const InternalNode*>(node))
 	{
-		HuffCode rightPrefix = prefix;
-		rightPrefix.push_back(true);
-		GenerateCodes(in->right, rightPrefix, outCodes);
-		
+	
 		HuffCode leftPrefix = prefix;
 		leftPrefix.push_back(false);
 		GenerateCodes(in->left, leftPrefix, outCodes);
+		
+		HuffCode rightPrefix = prefix;
+		rightPrefix.push_back(true);
+		GenerateCodes(in->right, rightPrefix, outCodes);
 	}
 }
 
 
 
-HuffCode HuffmanCompress(const char* string){
+HuffCode* HuffmanCompress(const char* string){
 	std::cout<<"Huffman Compression called"<<std::endl;
-	HuffCode compressedCode;
+	HuffCode compressedCode;  
 	int frequencies[AlphabetSize] = {0};
 	const char* ptr = string;
 	
-	while(*ptr != '\0')
+	while(*ptr != '\0'){
 		++frequencies[*ptr++];
-
+	}
 	INode* root = BuildHuffmanTree(frequencies);
 
-	HuffCodeMap codes;
+	HuffCodeMap codes; 
 	GenerateCodes(root, HuffCode(), codes);
+	std::cout<<codes.size()<<std::endl;
+	
 	delete root;
-
-	for(ptr = string;*ptr != '\0'; ptr++){
+	
+	for(ptr = string;*ptr != '\0'; ++ptr){
 		compressedCode.insert(compressedCode.end(), codes[*ptr].begin(), codes[*ptr].end());
 	}
-
-	return compressedCode;
+	return &compressedCode;
 }
 
 int main(){
 	std::cout<<"Test Started"<<std::endl;
 	const char* s = "this is a test";
-	HuffCode code = HuffmanCompress(s);
-	for(HuffCode::const_iterator i = code.begin(); i!=code.end(); ++i){
+	HuffCode* code = HuffmanCompress(s);
+	for(HuffCode::const_iterator i = code->begin(); i!=code->end(); ++i){
 		std::cout<< "This has been called  times" <<std::endl;	
 		std::cout<< *i << ' ' ;
 	}
