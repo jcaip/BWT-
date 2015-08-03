@@ -1,2 +1,2 @@
-# BWT-
-Burrows Wheeler Transform Data compression algorithm written in C++
+# Huffman-
+Huffman Data compression algorithm written in C++
