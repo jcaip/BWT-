@@ -38,7 +38,7 @@ class LeafNode : public INode//Leaf class that also contains a character
 	public:
 		const char c;
 
-		LeafNode(char c, int f) : INode(f) , c(c){}
+		LeafNode(int f, char c) : INode(f) , c(c){}
 };
 
 struct NodeCompare //compare two nodes
@@ -90,36 +90,45 @@ void GenerateCodes(const INode* node, const HuffCode& prefix, HuffCodeMap& outCo
 
 
 
-HuffCode* HuffmanCompress(const char* string){
+HuffCode HuffmanCompress(const char* string){
 	std::cout<<"Huffman Compression called"<<std::endl;
 	HuffCode compressedCode;  
-	int frequencies[AlphabetSize] = {0};
+	int frequencies[AlphabetSize]= {0};
 	const char* ptr = string;
 	
 	while(*ptr != '\0'){
 		++frequencies[*ptr++];
 	}
+	
+	//this code checks the values of the frequency array
+	/*for(int i =0;i<256;++i){
+		std::cout<<i<<"th element in the array is ";
+		std::cout<<frequencies[i]<<std::endl;
+	}*/
+
 	INode* root = BuildHuffmanTree(frequencies);
 
 	HuffCodeMap codes; 
 	GenerateCodes(root, HuffCode(), codes);
-	std::cout<<codes.size()<<std::endl;
 	
 	delete root;
 	
 	for(ptr = string;*ptr != '\0'; ++ptr){
+		std::cout<<"Char: "<<*ptr<<std::endl;
+
+		std::copy(codes[*ptr].begin(),codes[*ptr].end(), std::ostream_iterator<bool>(std::cout));
+		std::cout<<"endcode"<<std::endl;
+		//debugging code to check values
+		
 		compressedCode.insert(compressedCode.end(), codes[*ptr].begin(), codes[*ptr].end());
 	}
-	return &compressedCode;
+	return compressedCode;
 }
 
 int main(){
-	std::cout<<"Test Started"<<std::endl;
 	const char* s = "this is a test";
-	HuffCode* code = HuffmanCompress(s);
-	for(HuffCode::const_iterator i = code->begin(); i!=code->end(); ++i){
-		std::cout<< "This has been called  times" <<std::endl;	
-		std::cout<< *i << ' ' ;
-	}
+	std::cout<<"Test Started"<<std::endl;
+	HuffCode code = HuffmanCompress(s);
 	std::cout<<"Test Ended"<<std::endl;
+	std::copy(code.begin(),code.end(), std::ostream_iterator<bool>(std::cout));
 }
