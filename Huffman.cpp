@@ -1,14 +1,21 @@
+#include<chrono>
+#include<string>
 #include<iostream>
+#include<fstream>
 #include<queue>
 #include<map>
 #include<climits>
 #include<iterator>
 #include<algorithm>
-
+#include<stdlib.h>
 const int AlphabetSize = 1 <<CHAR_BIT;
 
 typedef std::vector<bool> HuffCode;
 typedef std::map<char, HuffCode> HuffCodeMap;
+
+using namespace std;
+using ns = chrono::milliseconds;
+using get_time = chrono::steady_clock;
 
 class INode
 {
@@ -90,18 +97,21 @@ void GenerateCodes(const INode* node, const HuffCode& prefix, HuffCodeMap& outCo
 
 
 
-HuffCode HuffmanCompress(const char* string){
+HuffCode* HuffmanCompress(const char* string){
 	std::cout<<"Huffman Compression called"<<std::endl;
-	HuffCode compressedCode;  
+	HuffCode* compressedCode = new HuffCode();  
+	
 	int frequencies[AlphabetSize]= {0};
 	const char* ptr = string;
-	
+	int a;	
 	while(*ptr != '\0'){
 		++frequencies[*ptr++];
+		a++;
 	}
+	std::cout<<a<<std::endl;
 	
 	//this code checks the values of the frequency array
-	/*for(int i =0;i<256;++i){
+/*	for(int i =0;i<256;++i){
 		std::cout<<i<<"th element in the array is ";
 		std::cout<<frequencies[i]<<std::endl;
 	}*/
@@ -114,21 +124,33 @@ HuffCode HuffmanCompress(const char* string){
 	delete root;
 	
 	for(ptr = string;*ptr != '\0'; ++ptr){
-		std::cout<<"Char: "<<*ptr<<std::endl;
+		//std::cout<<"Char: "<<*ptr<<std::endl;
 
-		std::copy(codes[*ptr].begin(),codes[*ptr].end(), std::ostream_iterator<bool>(std::cout));
-		std::cout<<"endcode"<<std::endl;
+		//std::copy(codes[*ptr].begin(),codes[*ptr].end(), std::ostream_iterator<bool>(std::cout));
+		//std::cout<<"endcode"<<std::endl;
 		//debugging code to check values
 		
-		compressedCode.insert(compressedCode.end(), codes[*ptr].begin(), codes[*ptr].end());
+		compressedCode->insert(compressedCode->end(), codes[*ptr].begin(), codes[*ptr].end());
 	}
+
 	return compressedCode;
 }
 
 int main(){
-	const char* s = "this is a test";
+
+	auto start = get_time::now();
+	//loadfile
+	std::ifstream in("100MB.txt");
+	std::string contents((std::istreambuf_iterator<char>(in)),
+			std::istreambuf_iterator<char>());		
+	
+	const char* s = contents.c_str(); 
 	std::cout<<"Test Started"<<std::endl;
-	HuffCode code = HuffmanCompress(s);
-	std::cout<<"Test Ended"<<std::endl;
-	std::copy(code.begin(),code.end(), std::ostream_iterator<bool>(std::cout));
+	HuffCode* code = HuffmanCompress(s);
+	std::cout<<code->size()<<std::endl;
+	
+	auto end= get_time::now();
+	auto diff = end - start;
+	std::cout<<"Elapsed time is :  "<< chrono::duration_cast<ns>(diff).count()<<" ms "<<std::endl;
 }
+
