@@ -108,13 +108,7 @@ HuffCode* HuffmanCompress(const char* string){
 		++frequencies[*ptr++];
 		a++;
 	}
-	std::cout<<a<<std::endl;
-	
-	//this code checks the values of the frequency array
-/*	for(int i =0;i<256;++i){
-		std::cout<<i<<"th element in the array is ";
-		std::cout<<frequencies[i]<<std::endl;
-	}*/
+	std::cout<<"File size before compression: "<<a<<" bytes"<<std::endl;
 
 	INode* root = BuildHuffmanTree(frequencies);
 
@@ -122,8 +116,22 @@ HuffCode* HuffmanCompress(const char* string){
 	GenerateCodes(root, HuffCode(), codes);
 	
 	delete root;
+		
 	
-	for(ptr = string;*ptr != '\0'; ++ptr){
+	//this code adds the frequencies of each char to the front of the compressed code so it is possible to recover the Huffman tree
+	for(int i =0;i<AlphabetSize;i++){
+		HuffCode *number = new HuffCode();
+		while(frequencies[i]){
+
+			number->push_back(frequencies[i] & 1);
+			frequencies[i] >>= 1;	
+		}
+		compressedCode->insert(compressedCode->end(), number->begin(), number->end());
+		//the above line writes the numbers bitwise backwards, so when reading them we have to read backwards too
+
+		delete number;
+	}
+	for(ptr = string; *ptr != '\0'; ++ptr){
 		//std::cout<<"Char: "<<*ptr<<std::endl;
 
 		//std::copy(codes[*ptr].begin(),codes[*ptr].end(), std::ostream_iterator<bool>(std::cout));
@@ -147,7 +155,7 @@ int main(){
 	const char* s = contents.c_str(); 
 	std::cout<<"Test Started"<<std::endl;
 	HuffCode* code = HuffmanCompress(s);
-	std::cout<<code->size()<<std::endl;
+	std::cout<<"File size after compression:  "<<(code->size())/8<<" bytes"<<std::endl;
 	
 	auto end= get_time::now();
 	auto diff = end - start;
