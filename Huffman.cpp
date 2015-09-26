@@ -140,7 +140,7 @@ int main(){
 
 	auto start = get_time::now();
 	//loadfile
-	std::ifstream in("100MB.txt");
+	std::ifstream in("tests/600kb_test.txt");
 	std::string contents((std::istreambuf_iterator<char>(in)),
 			std::istreambuf_iterator<char>());		
 	
