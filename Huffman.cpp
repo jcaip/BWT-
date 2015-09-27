@@ -143,7 +143,12 @@ HuffCode* HuffmanCompress(const char* string){
 
 	return compressedCode;
 }
+char* HuffmanExtract(HuffCode* ct){
+	
+}
 
+// TODO Write decompression function
+ // TODO Write cli argument 
 int main(){
 
 	auto start = get_time::now();
